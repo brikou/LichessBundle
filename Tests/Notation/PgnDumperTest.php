@@ -2,16 +2,14 @@
 
 namespace Bundle\LichessBundle\Tests\Notation;
 
-use Bundle\LichessBundle\Chess\Generator;
-use Bundle\LichessBundle\Chess\Manipulator;
+use Bundle\LichessBundle\Tests\ChessTest;
+use Bundle\LichessBundle\Model\Game;
 use Bundle\LichessBundle\Chess\Analyser;
-use Bundle\LichessBundle\Document\Game;
 use Bundle\LichessBundle\Notation\PgnDumper;
 
-class PgnDumperTest extends \PHPUnit_Framework_TestCase
+class PgnDumperTest extends ChessTest
 {
     protected $game;
-    protected $analyzer;
 
     public function testNewGame()
     {
@@ -56,7 +54,7 @@ EOF;
 
         $this->createGame($data);
         $piece = $this->game->getBoard()->getPieceByKey('b1');
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         $manipulator->play('b1 c3');
         $this->assertEquals(array('Nbc3'), $this->game->getPgnMoves());
     }
@@ -76,7 +74,7 @@ EOF;
 
         $this->createGame($data);
         $piece = $this->game->getBoard()->getPieceByKey('b1');
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         $manipulator->play('b1 d2');
         $this->assertEquals(array('N1d2'), $this->game->getPgnMoves());
     }
@@ -95,7 +93,7 @@ RNBQKN R
 EOF;
 
         $this->createGame($data);
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         $manipulator->play('b1 d2');
         $this->assertEquals(array('Nb1d2'), $this->game->getPgnMoves());
     }
@@ -115,7 +113,7 @@ EOF;
 
         $this->createGame($data);
         $this->game->getBoard()->getPieceByKey('g5')->setFirstMove(9);
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         $manipulator->play('f5 g6');
         $this->assertEquals(array('fxg6'), $this->game->getPgnMoves());
     }
@@ -135,7 +133,7 @@ EOF;
 
         $this->createGame($data);
         $this->game->getBoard()->getPieceByKey('g7')->setFirstMove(2);
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         $manipulator->play('g7 g8', array('promotion' => 'Knight'));
         $this->assertEquals(array('g8=N'), $this->game->getPgnMoves());
     }
@@ -155,7 +153,7 @@ EOF;
 
         $this->createGame($data);
         $this->game->getBoard()->getPieceByKey('g7')->setFirstMove(2);
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         $manipulator->play('g7 g8', array('promotion' => 'Queen'));
         $this->assertEquals(array('g8=Q#'), $this->game->getPgnMoves());
     }
@@ -249,7 +247,7 @@ EOF;
      **/
     protected function createGame($data = null, $blackTurn = false)
     {
-        $generator = new Generator();
+        $generator = $this->getGenerator();
         if($data) {
             $this->game = $generator->createGameFromVisualBlock($data);
         }
@@ -277,7 +275,7 @@ EOF;
      **/
     protected function applyMoves(array $moves)
     {
-        $manipulator = new Manipulator($this->game);
+        $manipulator = $this->getManipulator($this->game);
         foreach ($moves as $move)
         {
             $manipulator->play($move);

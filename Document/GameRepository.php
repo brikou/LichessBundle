@@ -1,10 +1,10 @@
 <?php
 
 namespace Bundle\LichessBundle\Document;
-use Doctrine\ODM\MongoDB\DocumentRepository;
 use Bundle\DoctrineUserBundle\Model\User;
+use Bundle\LichessBundle\Model;
 
-class GameRepository extends DocumentRepository
+class GameRepository extends ObjectRepository implements GameRepository
 {
     /**
      * Find all games played by a user
@@ -109,6 +109,43 @@ class GameRepository extends DocumentRepository
     }
 
     /**
+     * Return the number of wins
+     *
+     * @return int
+     **/
+    public function getNbWins(User $user)
+    {
+        return $this->createByUserQuery($user)
+            ->field('winnerUserId')->equals((string) $user->getId())
+            ->getQuery()->count();
+    }
+
+    /**
+     * Return the number of losses
+     *
+     * @return int
+     **/
+    public function getNbLosses(User $user)
+    {
+        return $this->createByUserQuery($user)
+            ->field('winnerUserId')->exists(true)
+            ->field('winnerUserId')->notEqual((string) $user->getId())
+            ->getQuery()->count();
+    }
+
+    /**
+     * Return the number of user games
+     *
+     * @return int
+     **/
+    public function getNbUserGames(User $user)
+    {
+        return $this->createByUserQuery($user)
+            ->field('status')->gte(Game::MATE)
+            ->getQuery()->count();
+    }
+
+    /**
      * Query of all games ordered by updatedAt
      *
      * @return Doctrine\ODM\Mongodb\Query
@@ -176,7 +213,7 @@ class GameRepository extends DocumentRepository
             ->field('status')->equals(Game::MATE);
     }
 
-    public function findSimilar(Game $game, \DateTime $since)
+    public function findSimilar(Model\Game $game, \DateTime $since)
     {
         return $this->createQueryBuilder()
             ->field('id')->notEqual($game->getId())

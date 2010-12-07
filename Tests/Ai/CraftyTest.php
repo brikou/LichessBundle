@@ -2,11 +2,10 @@
 
 namespace Bundle\LichessBundle\Tests\Ai;
 
-use Bundle\LichessBundle\Chess\Generator;
-use Bundle\LichessBundle\Chess\Manipulator;
+use Bundle\LichessBundle\Tests\ChessTest;
 use Bundle\LichessBundle\Ai\Crafty;
 
-class CraftyTest extends \PHPUnit_Framework_TestCase
+class CraftyTest extends ChessTest
 {
     protected $board;
     protected $game;
@@ -14,15 +13,20 @@ class CraftyTest extends \PHPUnit_Framework_TestCase
 
     public function setup()
     {
-        $generator = new Generator();
+        $generator = $this->getGenerator();
         $this->game = $generator->createGame();
         $this->board = $this->game->getBoard();
-        $this->manipulator = new Manipulator($this->game);
+        $this->manipulator = $this->getManipulator($this->game);
     }
 
     public function testMoveFormat()
     {
         $ai = new Crafty();
+
+        if (!$ai->isAvailable()) {
+            $this->markTestSkipped('Crafty is not installed');
+        }
+
         $move = $ai->move($this->game, 1);
         $this->assertRegexp('/[a-h][1-8]\s[a-h][1-8]/', $move);
     }
@@ -31,6 +35,11 @@ class CraftyTest extends \PHPUnit_Framework_TestCase
     {
         $dump = $this->board->dump();
         $ai = new Crafty();
+
+        if (!$ai->isAvailable()) {
+            $this->markTestSkipped('Crafty is not installed');
+        }
+
         $move = $ai->move($this->game, 1);
         $this->manipulator->play($move);
         $this->assertNotEquals($dump, $this->board->dump());
@@ -41,6 +50,11 @@ class CraftyTest extends \PHPUnit_Framework_TestCase
         for($it=0; $it<8; $it++) {
             $dump = $this->board->dump();
             $ai = new Crafty();
+
+            if (!$ai->isAvailable()) {
+                $this->markTestSkipped('Crafty is not installed');
+            }
+
             $move = $ai->move($this->game, 1);
             $this->manipulator->play($move);
             $this->assertNotEquals($dump, $this->board->dump());
@@ -50,6 +64,11 @@ class CraftyTest extends \PHPUnit_Framework_TestCase
     public function testLevels()
     {
         $ai = new Crafty();
+
+        if (!$ai->isAvailable()) {
+            $this->markTestSkipped('Crafty is not installed');
+        }
+        
         for($level=1; $level<=8; $level++) {
             $move = $ai->move($this->game, $level);
             $this->assertRegexp('/[a-h][1-8]\s[a-h][1-8]/', $move);

@@ -2,38 +2,31 @@
 
 namespace Bundle\LichessBundle\Chess;
 
-use Bundle\LichessBundle\Document\Game;
-use Bundle\LichessBundle\Document\Player;
-use Bundle\LichessBundle\Chess\Generator\PositionGenerator;
-use Bundle\LichessBundle\Chess\Generator\StandardPositionGenerator;
-use Bundle\LichessBundle\Chess\Generator\Chess960PositionGenerator;
+use Bundle\LichessBundle\Model\Player;
+use Bundle\LichessBundle\Model\Game;
+use Symfony\Component\DependencyInjection\ContainerAware;
 
-class Generator
+class Generator extends ContainerAware
 {
     /**
      * @return Game
      */
     public function createGame($variant = Game::VARIANT_STANDARD)
     {
-        $game = new Game($variant);
-
-        $game->addPlayer(new Player('white'));
-        $game->addPlayer(new Player('black'));
+        $game = $this->_createGame($variant);
 
         $this->getVariantGenerator($variant)->createPieces($game);
-
-        $game->setCreator($game->getPlayer('white'));
 
         return $game;
     }
 
-    protected function getVariantGenerator($variant)
+    public function getVariantGenerator($variant = Game::VARIANT_STANDARD)
     {
         if($variant === Game::VARIANT_960) {
-            $generator = new Chess960PositionGenerator();
+            $generator = $this->container->get('lichess_generator_960');
         }
         else {
-            $generator = new StandardPositionGenerator();
+            $generator = $this->container->get('lichess_generator_standard');
         }
 
         return $generator;
@@ -69,7 +62,7 @@ class Generator
         $nextPlayer = $nextGame->getPlayer($player->getOpponent()->getColor());
         $nextGame->setCreator($nextPlayer);
         if($game->hasClock()) {
-            $nextGame->setClock(clone $game->getClock());
+            $nextGame->setClock($nextGame->getClockInstance($game->getClock()->getLimit(), $game->getClock()->getMoveBonus()));
         }
         $nextGame->setIsRated($game->getIsRated());
         $nextGame->getPlayer('white')->setUser($game->getPlayer('black')->getUser());
@@ -102,15 +95,10 @@ RNBQK  R
     */
     public function createGameFromVisualBlock($data)
     {
+        $game = $this->_createGame();
+
         $data = $this->fixVisualBlock($data);
-        $game = new Game();
-
-        $players = array();
-        foreach(array('white', 'black') as $color) {
-            $game->addPlayer(new Player($color));
-        }
-        $game->setCreator($game->getPlayer('white'));
-
+        
         foreach(explode("\n", $data) as $_y => $line) {
             $y = 8-$_y;
             for($x=1; $x<9; $x++) {
@@ -128,7 +116,7 @@ RNBQK  R
                     case 'q': $class = 'Queen'; break;
                     case 'k': $class = 'King'; break;
                 }
-                $fullClass = 'Bundle\\LichessBundle\\Document\\Piece\\'.$class;
+                $fullClass = $this->container->getParameter('lichess.model.piece.class') . '\\' . $class;
                 $player->addPiece(new $fullClass($x, $y));
             }
         }
@@ -145,5 +133,19 @@ RNBQK  R
         }
 
         return implode("\n", $lines);
+    }
+
+    protected function _createGame($variant = null)
+    {
+        $gameClass = $this->container->getParameter('lichess.model.game.class');
+        $game = new $gameClass($variant);
+
+        $playerClass = $this->container->getParameter('lichess.model.player.class');
+        $game->addPlayer(new $playerClass('white'));
+        $game->addPlayer(new $playerClass('black'));
+
+        $game->setCreator($game->getPlayer('white'));
+
+        return $game;
     }
 }

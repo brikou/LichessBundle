@@ -1,12 +1,40 @@
 <?php
 
-namespace Bundle\LichessBundle\Document;
+namespace Bundle\LichessBundle\Entity;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Bundle\LichessBundle\Chess\Generator\StandardPositionGenerator;
 
 class GameFunctionalTest extends WebTestCase
 {
     protected $dm;
+    protected $kernel;
+    protected $gameClass;
+    protected $playerClass;
+    protected $clockClass;
+
+    public function setUp()
+    {
+        $this->kernel = $this->createKernel();
+        $this->kernel->boot();
+
+        $this->dm = $this->kernel->getContainer()->get('lichess.object_manager');
+
+        $this->gameClass = $this->kernel->getContainer()->getParameter('lichess.model.game.class');
+        $this->playerClass = $this->kernel->getContainer()->getParameter('lichess.model.player.class');
+        $this->clockClass = $this->kernel->getContainer()->getParameter('lichess.model.clock.class');
+
+        if ($this->dm instanceof \Doctrine\ORM\EntityManager) {
+            $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($this->dm);
+            $queries = $this->dm->getMetadataFactory()->getAllMetadata();
+
+            try {
+                $schemaTool->createSchema($queries);
+            }
+            catch (\Exception $e) {
+                
+            }
+        }
+    }
 
     public function testCreateGame()
     {
@@ -80,7 +108,7 @@ class GameFunctionalTest extends WebTestCase
     public function testInsertFullFeaturedGame()
     {
         $game = $this->createGame();
-        $game->setClock(new Clock(120));
+        $game->setClock(new $this->clockClass(120));
         $game->start();
         $this->dm->persist($game);
         $this->dm->flush();
@@ -99,7 +127,7 @@ class GameFunctionalTest extends WebTestCase
     public function testFetchFullFeaturedGame($gameId)
     {
         $game = $this->dm->getRepository('LichessBundle:Game')->findOneById($gameId);
-        $this->assertInstanceOf('\Bundle\LichessBundle\Document\Clock', $game->getClock());
+        $this->assertInstanceOf('\Bundle\LichessBundle\Model\Clock', $game->getClock());
         $this->assertEquals(2, $game->getClock()->getLimitInMinutes());
         $this->assertEquals(4, $game->getRoom()->getNbMessages());
     }
@@ -134,21 +162,25 @@ class GameFunctionalTest extends WebTestCase
 
     protected function createGame()
     {
-        $game = new Game();
-        $game->addPlayer(new Player('white'));
-        $game->addPlayer(new Player('black'));
+        $game = new $this->gameClass();
+        $game->addPlayer(new $this->playerClass('white'));
+        $game->addPlayer(new $this->playerClass('black'));
         $game->setCreatorColor('white');
-        $positionGenerator = new StandardPositionGenerator();
-        $positionGenerator->createPiecesMinimal($game);
+        $this->createPiecesMinimal($game);
         return $game;
     }
 
-    public function setUp()
+    public function createPiecesMinimal(Game $game)
     {
-        if(null === $this->dm) {
-            $kernel = $this->createKernel();
-            $kernel->boot();
-            $this->dm = $kernel->getContainer()->get('doctrine.odm.mongodb.document_manager');
-        }
+        $positionGenerator = $this->kernel->getContainer()->get('lichess_generator');
+        $generator = $positionGenerator->getVariantGenerator();
+
+        $pieces = array();
+        $player = $game->getPlayer('white');
+        $pieces[] = $generator->createPiece('Pawn', 1, 2);
+        $player->setPieces($pieces);
+        $player->getOpponent()->setPieces($generator->mirrorPieces($pieces));
+
+        $game->setInitialFen(null);
     }
 }

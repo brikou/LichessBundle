@@ -2,7 +2,7 @@
 
 namespace Bundle\LichessBundle\Chess\Generator;
 
-use Bundle\LichessBundle\Document\Game;
+use Bundle\LichessBundle\Model\Game;
 
 class StandardPositionGenerator extends PositionGenerator
 {
@@ -17,17 +17,6 @@ class StandardPositionGenerator extends PositionGenerator
             $pieces[] = $this->createPiece($class, $x+1, 1);
         }
 
-        $player->setPieces($pieces);
-        $player->getOpponent()->setPieces($this->mirrorPieces($pieces));
-
-        $game->setInitialFen(null);
-    }
-
-    public function createPiecesMinimal(Game $game)
-    {
-        $pieces = array();
-        $player = $game->getPlayer('white');
-        $pieces[] = $this->createPiece('Pawn', 1, 2);
         $player->setPieces($pieces);
         $player->getOpponent()->setPieces($this->mirrorPieces($pieces));
 

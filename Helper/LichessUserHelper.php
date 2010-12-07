@@ -4,8 +4,8 @@ namespace Bundle\LichessBundle\Helper;
 
 use Symfony\Component\Templating\Helper\Helper;
 use Symfony\Component\Routing\Router;
-use Application\DoctrineUserBundle\Document\User;
-use Bundle\LichessBundle\Document\Player;
+use Bundle\DoctrineUserBundle\Model\User;
+use Bundle\LichessBundle\Model\Player;
 
 class LichessUserHelper extends Helper
 {

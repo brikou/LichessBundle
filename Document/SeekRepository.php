@@ -1,10 +1,10 @@
 <?php
 
 namespace Bundle\LichessBundle\Document;
-use Doctrine\ODM\MongoDB\DocumentRepository;
 use Bundle\LichessBundle\Document\Game;
+use Bundle\LichessBundle\Model;
 
-class SeekRepository extends DocumentRepository
+class SeekRepository extends ObjectRepository implements Model\SeekRepository
 {
     public function findAllSortByCreatedAt()
     {
@@ -13,7 +13,7 @@ class SeekRepository extends DocumentRepository
             ->getQuery()->execute();
     }
 
-    public function findOneByGame(Game $game)
+    public function findOneByGame(Model\Game $game)
     {
         return $this->createQueryBuilder()
             ->field('game.$id')->equals($game->getId())

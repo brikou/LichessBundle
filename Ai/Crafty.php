@@ -2,7 +2,7 @@
 
 namespace Bundle\LichessBundle\Ai;
 use Bundle\LichessBundle\Notation\Forsyth;
-use Bundle\LichessBundle\Document\Game;
+use Bundle\LichessBundle\Model\Game;
 
 class Crafty
 {
@@ -15,6 +15,11 @@ class Crafty
         $move = $forsyth->diffToMove($game, $newForsyth);
 
         return $move;
+    }
+
+    public function isAvailable()
+    {
+        return file_exists('/usr/games/crafty');
     }
 
     protected function removeCastlingInfos($forsyth)

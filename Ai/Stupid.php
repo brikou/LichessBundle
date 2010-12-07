@@ -3,7 +3,7 @@
 namespace Bundle\LichessBundle\Ai;
 
 use Bundle\LichessBundle\Chess\Analyser;
-use Bundle\LichessBundle\Document\Game;
+use Bundle\LichessBundle\Model\Game;
 
 /**
  * This stupid AI plays a valid move randomly chosen
@@ -26,5 +26,10 @@ class Stupid
         $to = $moveTree[$from][array_rand($moveTree[$from])];
 
         return $from.' '.$to;
+    }
+
+    public function isAvailable()
+    {
+        return true;
     }
 }

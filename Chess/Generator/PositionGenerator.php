@@ -2,14 +2,15 @@
 
 namespace Bundle\LichessBundle\Chess\Generator;
 
-use Bundle\LichessBundle\Document\Game;
-use Bundle\LichessBundle\Document\Player;
+use Bundle\LichessBundle\Model\Game;
+use Bundle\LichessBundle\Model\Player;
+use Symfony\Component\DependencyInjection\ContainerAware;
 
-abstract class PositionGenerator
+abstract class PositionGenerator extends ContainerAware
 {
     abstract public function createPieces(Game $game);
 
-    protected function mirrorPieces(array $pieces)
+    public function mirrorPieces(array $pieces)
     {
         $_pieces = array();
         foreach($pieces as $piece) {
@@ -22,9 +23,9 @@ abstract class PositionGenerator
     /**
      * @return Piece
      */
-    protected function createPiece($class, $x, $y)
+    public function createPiece($class, $x, $y)
     {
-        $fullClass = 'Bundle\\LichessBundle\\Document\\Piece\\'.$class;
+        $fullClass = $this->container->getParameter('lichess.model.piece.class') . '\\' . $class;
 
         $piece = new $fullClass($x, $y);
 

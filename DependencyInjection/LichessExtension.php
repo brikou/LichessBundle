@@ -21,13 +21,58 @@ class LichessExtension extends Extension
         $loader->load('translation.xml');
         $loader->load('form.xml');
         $loader->load('security.xml');
+        $loader->load('services.xml');
+
+        if (!isset($config['db_driver'])) {
+            throw new \InvalidArgumentException('You must provide the lichess.db_driver configuration');
+        }
+
+        try {
+            $loader->load(sprintf('%s.xml', $config['db_driver']));
+        } catch (\InvalidArgumentException $e) {
+            throw new \InvalidArgumentException(sprintf('The db_driver "%s" is not supported by forum', $config['db_driver']));
+        }
 
         if(isset($config['ai']['class'])) {
             $container->setParameter('lichess.ai.class', $config['ai']['class']);
         }
 
+        if(isset($config['storage']['class'])) {
+            $container->setParameter('lichess.storage.class', $config['storage']['class']);
+        }
+
         if(isset($config['translation']['remote_domain'])) {
             $container->setParameter('lichess.translation.remote_domain', $config['translation']['remote_domain']);
+        }
+
+        if (isset($config['class'])) {
+            $namespaces = array(
+                'model' => 'lichess.model.%s.class',
+            );
+            $this->remapParametersNamespaces($config['class'], $container, $namespaces);
+        }
+    }
+
+    protected function remapParametersNamespaces(array $config, ContainerBuilder $container, array $namespaces)
+    {
+        foreach ($namespaces as $ns => $map) {
+            if ($ns) {
+                if (!isset($config[$ns])) {
+                    continue;
+                }
+                $namespaceConfig = $config[$ns];
+            } else {
+                $namespaceConfig = $config;
+            }
+            if (is_array($map)) {
+                $this->remapParameters($namespaceConfig, $container, $map);
+            } else {
+                foreach ($namespaceConfig as $name => $value) {
+                    if(null !== $value) {
+                        $container->setParameter(sprintf($map, $name), $value);
+                    }
+                }
+            }
         }
     }
 
