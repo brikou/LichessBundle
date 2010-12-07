@@ -26,11 +26,14 @@ class LichessExtension extends Extension
         if (!isset($config['db_driver'])) {
             throw new \InvalidArgumentException('You must provide the lichess.db_driver configuration');
         }
+        if (!isset($config['storage']['class'])) {
+            throw new \InvalidArgumentException('You must provide the lichess.storage.class configuration');
+        }
 
         try {
             $loader->load(sprintf('%s.xml', $config['db_driver']));
         } catch (\InvalidArgumentException $e) {
-            throw new \InvalidArgumentException(sprintf('The db_driver "%s" is not supported by forum', $config['db_driver']));
+            throw new \InvalidArgumentException(sprintf('The db_driver "%s" is not supported by lichess', $config['db_driver']));
         }
 
         if(isset($config['ai']['class'])) {
