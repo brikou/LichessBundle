@@ -61,7 +61,7 @@ class GameRepository extends ObjectRepository implements Model\GameRepository
         $data = array_map(function($item) {
             return $item['id'];
         }, $data);
-        
+
         return $data;
     }
 

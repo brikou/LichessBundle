@@ -4,7 +4,7 @@ namespace Bundle\LichessBundle\Document;
 use Bundle\DoctrineUserBundle\Model\User;
 use Bundle\LichessBundle\Model;
 
-class GameRepository extends ObjectRepository implements GameRepository
+class GameRepository extends ObjectRepository implements Model\GameRepository
 {
     /**
      * Find all games played by a user
