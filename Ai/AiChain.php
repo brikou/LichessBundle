@@ -24,7 +24,7 @@ class AiChain implements AiInterface
             try {
                 return $implementation->move($game, $level);
             } catch(Exception $e) {
-                $this->logger->err($game, sprintf('Ai:move Crafty %s %s', get_class($e), $e->getMessage()));
+                $this->logger->err($game, sprintf('Ai:move %s %s %s', get_class($implementation), get_class($e), $e->getMessage()));
             }
         }
 

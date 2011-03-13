@@ -7,6 +7,7 @@
     <parameters>
         <parameter key="lichess.ai.stupid.class">Bundle\LichessBundle\Ai\Stupid</parameter>
         <parameter key="lichess.ai.crafty.class">Bundle\LichessBundle\Ai\Crafty</parameter>
+        <parameter key="lichess.ai.stockfish.class">Bundle\LichessBundle\Ai\Stockfish</parameter>
         <parameter key="lichess.ai.chain.class">Bundle\LichessBundle\Ai\AiChain</parameter>
     </parameters>
 
@@ -21,6 +22,14 @@
                 <argument key="book_dir">%lichess.ai.crafty.book_dir%</argument>
             </argument>
             <tag name="lichess.ai" alias="crafty" />
+        </service>
+
+        <service id="lichess.ai.stockfish" class="%lichess.ai.stockfish.class%" public="false">
+            <argument key="lichess.ai.stockfish.options" type="collection">
+                <argument key="executable_path">%lichess.ai.stockfish.executable_path%</argument>
+                <argument key="book_dir">%lichess.ai.stockfish.book_dir%</argument>
+            </argument>
+            <tag name="lichess.ai" alias="stockfish" />
         </service>
 
         <service id="lichess.ai.chain" class="%lichess.ai.chain.class%">

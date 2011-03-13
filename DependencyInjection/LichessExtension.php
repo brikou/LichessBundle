@@ -37,6 +37,9 @@ class LichessExtension extends Extension
         $config = $processor->process($configuration->getConfigTree(), $configs);
 
         foreach (array('enabled', 'priority', 'executable_path', 'book_dir') as $option) {
+            $container->setParameter('lichess.ai.stockfish.'.$option, $config['ai']['stockfish'][$option]);
+        }
+        foreach (array('enabled', 'priority', 'executable_path', 'book_dir') as $option) {
             $container->setParameter('lichess.ai.crafty.'.$option, $config['ai']['crafty'][$option]);
         }
         foreach (array('enabled', 'priority') as $option) {
